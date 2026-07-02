@@ -1,5 +1,6 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { Html } from '@react-three/drei';
 import type { Tree } from '../../types';
 import * as THREE from 'three';
 
@@ -10,6 +11,7 @@ interface TreeMeshProps {
 
 export default function TreeMesh({ tree, onClick }: TreeMeshProps) {
   const groupRef = useRef<THREE.Group>(null);
+  const [hovered, setHovered] = useState(false);
   const count = tree.logs.length;
 
   useFrame(() => {
@@ -107,10 +109,33 @@ export default function TreeMesh({ tree, onClick }: TreeMeshProps) {
       )}
 
       {/* 클릭 판정용 투명 메시 */}
-      <mesh position={[0, 1.6, 0]} onClick={(e) => { e.stopPropagation(); onClick(); }}>
+      <mesh 
+        position={[0, 1.6, 0]} 
+        onClick={(e) => { e.stopPropagation(); onClick(); }}
+        onPointerOver={(e) => { document.body.style.cursor = 'pointer'; e.stopPropagation(); setHovered(true); }}
+        onPointerOut={(e) => { document.body.style.cursor = 'auto'; e.stopPropagation(); setHovered(false); }}
+      >
         <cylinderGeometry args={[1.3, 1.3, 3.2, 8]} />
         <meshBasicMaterial visible={false} />
       </mesh>
+
+      {/* 이름 라벨 */}
+      <Html position={[0, count >= 7 ? 4.0 : count >= 5 ? 3.3 : count >= 3 ? 3.0 : 2.0, 0]} center style={{
+        transition: 'all 0.2s ease-in-out',
+        opacity: hovered ? 1 : 0.4,
+        filter: hovered ? 'none' : 'blur(0.5px)',
+        background: 'rgba(0,0,0,0.4)',
+        color: 'white',
+        padding: '2px 8px',
+        borderRadius: '12px',
+        fontSize: '12px',
+        pointerEvents: 'none',
+        whiteSpace: 'nowrap',
+        userSelect: 'none',
+        transform: hovered ? 'scale(1.1)' : 'scale(1)'
+      }}>
+        {tree.familyName}
+      </Html>
     </group>
   );
 }
