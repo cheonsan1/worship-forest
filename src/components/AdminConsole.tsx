@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Sliders, Settings, RefreshCw, Trash2, BarChart2 } from 'lucide-react';
 import { historicalYearsData } from '../utils/helpers';
 
@@ -22,6 +23,18 @@ export default function AdminConsole({
   onReset,
   onSaveChurchName
 }: AdminConsoleProps) {
+  const [localChurchName, setLocalChurchName] = useState(churchName);
+
+  useEffect(() => {
+    setLocalChurchName(churchName);
+  }, [churchName]);
+
+  const handleSave = () => {
+    if (localChurchName !== churchName) {
+      setChurchName(localChurchName);
+      onSaveChurchName();
+    }
+  };
   
   return (
     <div className="bg-emerald-900 text-white py-6 shadow-xl border-b-4 border-yellow-400 animate-in fade-in slide-in-from-top duration-300">
@@ -44,10 +57,10 @@ export default function AdminConsole({
               <span className="text-xs font-bold text-white whitespace-nowrap">숲 이름 설정:</span>
               <input
                 type="text"
-                value={churchName}
-                onChange={(e) => setChurchName(e.target.value)}
-                onBlur={onSaveChurchName}
-                onKeyDown={(e) => { if (e.key === 'Enter') onSaveChurchName(); }}
+                value={localChurchName}
+                onChange={(e) => setLocalChurchName(e.target.value)}
+                onBlur={handleSave}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
                 placeholder="예: 천산중앙"
                 className="px-2.5 py-1 rounded-lg text-xs text-gray-800 outline-none focus:ring-2 focus:ring-yellow-400 font-bold w-full sm:w-32"
               />
