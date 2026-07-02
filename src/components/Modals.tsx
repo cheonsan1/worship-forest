@@ -67,10 +67,11 @@ interface FlowerFormModalProps {
   onClose: () => void;
   onSubmit: (flower: Omit<FlowerType, 'id'>) => void;
   currentYear: number;
+  userName?: string;
 }
 
-export function FlowerFormModal({ onClose, onSubmit, currentYear }: FlowerFormModalProps) {
-  const [name, setName] = useState('');
+export function FlowerFormModal({ onClose, onSubmit, currentYear, userName }: FlowerFormModalProps) {
+  const [name, setName] = useState(userName || '');
   const [message, setMessage] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -89,8 +90,8 @@ export function FlowerFormModal({ onClose, onSubmit, currentYear }: FlowerFormMo
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 relative animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50">
+      <div className="bg-white/85 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-md p-6 relative animate-in fade-in zoom-in duration-300 border border-white/50">
         <button onClick={onClose} className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors">
           <X className="w-6 h-6" />
         </button>
@@ -104,8 +105,9 @@ export function FlowerFormModal({ onClose, onSubmit, currentYear }: FlowerFormMo
               type="text"
               required
               value={name}
+              readOnly={!!userName}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 outline-none transition"
+              className={`w-full px-4 py-2.5 border rounded-xl outline-none transition ${userName ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white/50 border-gray-200 focus:ring-2 focus:ring-pink-400'}`}
               placeholder="예: 홍길동 집사"
             />
           </div>
@@ -177,8 +179,8 @@ export function TreeFormModal({ onClose, trees, onSubmitNewTree, onSubmitLog, in
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-6 my-8 relative animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
+      <div className="bg-white/85 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-lg p-6 my-8 relative animate-in fade-in zoom-in duration-300 border border-white/50">
         <button onClick={onClose} className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors">
           <X className="w-6 h-6" />
         </button>
@@ -311,13 +313,14 @@ interface DetailModalProps {
   onAddFlowerComment: (flowerId: string, name: string, text: string) => void;
   onAddTreeLogComment: (treeId: string, logId: string, name: string, text: string) => void;
   onOpenTreeForm: (treeId: string) => void;
+  userName?: string;
 }
 
 export function DetailModal({
   element, onClose, activeFlower, activeTree, currentYear,
-  onLikeFlower, onLikeTreeLog, onAddFlowerComment, onAddTreeLogComment, onOpenTreeForm
+  onLikeFlower, onLikeTreeLog, onAddFlowerComment, onAddTreeLogComment, onOpenTreeForm, userName
 }: DetailModalProps) {
-  const [flowerCommenter, setFlowerCommenter] = useState('');
+  const [flowerCommenter, setFlowerCommenter] = useState(userName || '');
   const [flowerCommentText, setFlowerCommentText] = useState('');
   
   const [treeCommenterMap, setTreeCommenterMap] = useState<Record<string, string>>({});
@@ -326,8 +329,8 @@ export function DetailModal({
   if (!element) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto" onClick={onClose}>
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-6 my-8 relative animate-in fade-in slide-in-from-bottom-4 duration-200 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto" onClick={onClose}>
+      <div className="bg-white/85 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-lg p-6 my-8 relative animate-in fade-in slide-in-from-bottom-4 duration-300 max-h-[90vh] overflow-y-auto border border-white/50" onClick={(e) => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors z-10">
           <X className="w-5 h-5" />
         </button>
@@ -377,11 +380,11 @@ export function DetailModal({
                 e.preventDefault();
                 if(flowerCommenter && flowerCommentText) {
                   onAddFlowerComment(activeFlower.id, flowerCommenter, flowerCommentText);
-                  setFlowerCommenter(''); setFlowerCommentText('');
+                  setFlowerCommentText('');
                 }
               }} className="flex gap-2">
-                <input type="text" required value={flowerCommenter} onChange={e => setFlowerCommenter(e.target.value)} placeholder="이름" className="w-20 px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-pink-400" />
-                <input type="text" required value={flowerCommentText} onChange={e => setFlowerCommentText(e.target.value)} placeholder="격려 한마디" className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-pink-400" />
+                <input type="text" required value={flowerCommenter} readOnly={!!userName} onChange={e => setFlowerCommenter(e.target.value)} placeholder="이름" className={`w-20 px-2.5 py-1.5 border rounded-lg text-xs outline-none ${userName ? 'bg-gray-100 border-gray-200 text-gray-500' : 'bg-white/50 border-gray-200 focus:ring-1 focus:ring-pink-400'}`} />
+                <input type="text" required value={flowerCommentText} onChange={e => setFlowerCommentText(e.target.value)} placeholder="격려 한마디" className="flex-1 bg-white/50 px-3 py-1.5 border border-gray-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-pink-400" />
                 <button type="submit" className="bg-pink-500 text-white p-2 rounded-lg shadow-sm"><Send className="w-3.5 h-3.5" /></button>
               </form>
             </div>
@@ -446,16 +449,15 @@ export function DetailModal({
                     </div>
                     <form onSubmit={(e) => {
                       e.preventDefault();
-                      const cName = treeCommenterMap[log.id];
+                      const cName = treeCommenterMap[log.id] || userName;
                       const cText = treeCommentTextMap[log.id];
                       if(cName && cText) {
                         onAddTreeLogComment(activeTree.id, log.id, cName, cText);
-                        setTreeCommenterMap(p => ({...p, [log.id]: ''}));
                         setTreeCommentTextMap(p => ({...p, [log.id]: ''}));
                       }
                     }} className="flex gap-1.5 pt-1">
-                      <input type="text" required value={treeCommenterMap[log.id] || ''} onChange={e => setTreeCommenterMap(p => ({...p, [log.id]: e.target.value}))} placeholder="이름" className="w-16 px-2 py-1 border border-gray-200 rounded-md text-[10px] outline-none" />
-                      <input type="text" required value={treeCommentTextMap[log.id] || ''} onChange={e => setTreeCommentTextMap(p => ({...p, [log.id]: e.target.value}))} placeholder="축복의 말" className="flex-1 px-2.5 py-1 border border-gray-200 rounded-md text-[10px] outline-none" />
+                      <input type="text" required value={treeCommenterMap[log.id] || userName || ''} readOnly={!!userName} onChange={e => setTreeCommenterMap(p => ({...p, [log.id]: e.target.value}))} placeholder="이름" className={`w-16 px-2 py-1 border rounded-md text-[10px] outline-none ${userName ? 'bg-gray-100 border-gray-200 text-gray-500' : 'bg-white/50 border-gray-200'}`} />
+                      <input type="text" required value={treeCommentTextMap[log.id] || ''} onChange={e => setTreeCommentTextMap(p => ({...p, [log.id]: e.target.value}))} placeholder="축복의 말" className="flex-1 bg-white/50 px-2.5 py-1 border border-gray-200 rounded-md text-[10px] outline-none" />
                       <button type="submit" className="bg-emerald-600 text-white px-2.5 rounded-md text-[10px]">등록</button>
                     </form>
                   </div>

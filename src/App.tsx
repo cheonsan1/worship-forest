@@ -1,13 +1,16 @@
 import { useState } from 'react';
-import { Sprout, Flower, Info, Lock } from 'lucide-react';
+import { Sprout, Flower, Info, Lock, LogOut, LogIn, Trophy } from 'lucide-react';
 import { useFirebase } from './hooks/useFirebase';
+import { useAuth } from './hooks/useAuth';
 import ThreeScene from './components/ThreeScene';
 import AdminConsole from './components/AdminConsole';
 import { AdminLoginModal, FlowerFormModal, TreeFormModal, DetailModal } from './components/Modals';
+import { RankingModal } from './components/RankingModal';
 import { filterData } from './utils/helpers';
 
 export default function App() {
   const { trees, flowers, settings, updateChurchName, addFlower, updateFlower, addTree, updateTree, resetAllData } = useFirebase();
+  const { user, loginWithGoogle, logout } = useAuth();
 
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [filterPeriod, setFilterPeriod] = useState('ALL');
@@ -17,6 +20,7 @@ export default function App() {
   
   const [isFlowerFormOpen, setIsFlowerFormOpen] = useState(false);
   const [isTreeFormOpen, setIsTreeFormOpen] = useState(false);
+  const [isRankingOpen, setIsRankingOpen] = useState(false);
   const [treeFormMode, setTreeFormMode] = useState<'new' | 'existing'>('new');
   const [selectedTreeForForm, setSelectedTreeForForm] = useState('');
 
@@ -27,51 +31,86 @@ export default function App() {
   const activeFlower = selectedElement?.type === 'flower' ? flowers.find(f => f.id === selectedElement.id) || null : null;
   const activeTree = selectedElement?.type === 'tree' ? trees.find(t => t.id === selectedElement.id) || null : null;
 
+  const requireAuth = (callback: () => void) => {
+    if (!user) {
+      alert("로그인이 필요한 기능입니다. 상단의 로그인 버튼을 눌러주세요.");
+      return;
+    }
+    callback();
+  };
+
   const handleLikeFlower = (id: string) => {
-    const f = flowers.find(f => f.id === id);
-    if (f) updateFlower(id, { likes: f.likes + 1 });
+    requireAuth(() => {
+      const f = flowers.find(f => f.id === id);
+      if (f) updateFlower(id, { likes: f.likes + 1 });
+    });
   };
 
   const handleLikeTreeLog = (treeId: string, logId: string) => {
-    const t = trees.find(t => t.id === treeId);
-    if (t) {
-      const logs = t.logs.map(l => l.id === logId ? { ...l, likes: l.likes + 1 } : l);
-      updateTree(treeId, { logs });
-    }
+    requireAuth(() => {
+      const t = trees.find(t => t.id === treeId);
+      if (t) {
+        const logs = t.logs.map(l => l.id === logId ? { ...l, likes: l.likes + 1 } : l);
+        updateTree(treeId, { logs });
+      }
+    });
   };
 
   const handleAddFlowerComment = (flowerId: string, name: string, text: string) => {
-    const f = flowers.find(f => f.id === flowerId);
-    if (f) {
-      const newComment = { id: Date.now().toString(), name, text, date: new Date().toLocaleString('ko-KR') };
-      updateFlower(flowerId, { comments: [...f.comments, newComment] });
-    }
+    requireAuth(() => {
+      const f = flowers.find(f => f.id === flowerId);
+      if (f) {
+        const newComment = { id: Date.now().toString(), name, text, date: new Date().toLocaleString('ko-KR') };
+        updateFlower(flowerId, { comments: [...f.comments, newComment] });
+      }
+    });
   };
 
   const handleAddTreeLogComment = (treeId: string, logId: string, name: string, text: string) => {
-    const t = trees.find(t => t.id === treeId);
-    if (t) {
-      const newComment = { id: Date.now().toString(), name, text, date: new Date().toLocaleString('ko-KR') };
-      const logs = t.logs.map(l => l.id === logId ? { ...l, comments: [...l.comments, newComment] } : l);
-      updateTree(treeId, { logs });
-    }
+    requireAuth(() => {
+      const t = trees.find(t => t.id === treeId);
+      if (t) {
+        const newComment = { id: Date.now().toString(), name, text, date: new Date().toLocaleString('ko-KR') };
+        const logs = t.logs.map(l => l.id === logId ? { ...l, comments: [...l.comments, newComment] } : l);
+        updateTree(treeId, { logs });
+      }
+    });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-50 to-green-50 text-gray-800 font-sans">
-      <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-30 border-b border-green-100">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <div className="p-2 bg-green-100 rounded-xl">
-              <Sprout className="text-green-600 w-8 h-8" />
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-emerald-50 text-gray-800 font-sans selection:bg-emerald-200">
+      <header className="bg-white/70 backdrop-blur-xl shadow-sm sticky top-0 z-30 border-b border-emerald-100/50 transition-all">
+        <div className="max-w-6xl mx-auto px-4 py-3.5 flex justify-between items-center">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-gradient-to-br from-emerald-400 to-green-600 rounded-xl shadow-inner">
+              <Sprout className="text-white w-7 h-7" />
             </div>
             <div>
-              <h1 className="text-xl md:text-2xl font-bold text-green-800 tracking-tight">{settings.churchName} 워십 숲 3D</h1>
-              <p className="text-[10px] text-green-600 font-bold">성장형 정원 & 밀집형 정돈 시스템</p>
+              <h1 className="text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-800 to-green-600 tracking-tight">
+                {settings.churchName} 워십 숲 3D
+              </h1>
             </div>
           </div>
           
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
+            {user ? (
+              <div className="flex items-center gap-3">
+                <div className="hidden sm:flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
+                  <img src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}`} alt="profile" className="w-6 h-6 rounded-full" />
+                  <span className="text-xs font-bold text-emerald-800">{user.displayName}님</span>
+                </div>
+                <button onClick={logout} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-100 transition-colors">
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">로그아웃</span>
+                </button>
+              </div>
+            ) : (
+              <button onClick={loginWithGoogle} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition-colors">
+                <LogIn className="w-3.5 h-3.5" />
+                <span>구글 로그인</span>
+              </button>
+            )}
+
             <button
               onClick={() => {
                 setIsAdminMode(!isAdminMode);
@@ -80,12 +119,11 @@ export default function App() {
                   setFilterPeriod('ALL');
                 }
               }}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-sm transition-all ${
-                isAdminMode ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-emerald-800 text-white hover:bg-emerald-900'
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm transition-all border ${
+                isAdminMode ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100' : 'bg-white text-gray-400 border-gray-200 hover:bg-gray-50'
               }`}
             >
               <Lock className="w-3.5 h-3.5" />
-              <span>{isAdminMode ? '관리자 퇴장' : '관리자 모드'}</span>
             </button>
           </div>
         </div>
@@ -94,60 +132,58 @@ export default function App() {
       {isAdminMode && isAdminAuthenticated && (
         <AdminConsole
           churchName={settings.churchName}
-          setChurchName={(name) => updateChurchName(name)} // This is a temporary fast update to local state if needed, but since it's firebase backed we might want a local buffer. For simplicity we use the hook directly or just wait for snap.
+          setChurchName={updateChurchName}
           filterPeriod={filterPeriod}
           setFilterPeriod={setFilterPeriod}
           currentYear={currentYear}
           setCurrentYear={setCurrentYear}
           onReset={resetAllData}
-          onSaveChurchName={() => {}} // Not needed if onChange directly updates it, but to prevent spam, we could use local state. Let's assume input value updates DB on blur. 
+          onSaveChurchName={() => {}} 
         />
       )}
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <div className="mb-6 bg-white/95 p-5 rounded-2xl shadow-sm border border-green-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="flex gap-3">
-            <div className="p-2.5 bg-green-100 rounded-2xl h-fit flex-shrink-0">
-              <Info className="text-green-600 w-5 h-5 animate-pulse" />
+      <main className="max-w-6xl mx-auto px-4 py-6 md:py-8">
+        <div className="mb-6 bg-white/60 backdrop-blur-lg p-5 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="flex gap-3 items-center">
+            <div className="p-2.5 bg-gradient-to-br from-green-100 to-emerald-50 rounded-2xl h-fit flex-shrink-0 shadow-sm border border-emerald-100">
+              <Info className="text-emerald-600 w-5 h-5" />
             </div>
             <div>
-              <h4 className="font-bold text-gray-800 text-sm md:text-base">둥근 3D {settings.churchName} 정원 활용법 ({currentYear}년 숲)</h4>
-              <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                현재 숲의 참여자 수가 늘어남에 따라 <strong>정원이 점진적으로 더 크게 자동 확장</strong>됩니다. <br />
-                나무들은 <strong>가운데 중심으로 포근하게 밀집</strong>되어 있으며, 꽃들은 <strong>나무 바로 사이사이에 예쁘게 피어납니다</strong>. 
+              <h4 className="font-extrabold text-gray-800 text-sm md:text-base">{currentYear}년, {settings.churchName} 정원</h4>
+              <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                정원의 중앙부터 나선형으로 퍼져나가며 자라납니다.
               </p>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-            <div className="flex gap-1.5 bg-blue-50 border border-blue-100 p-2 rounded-xl text-xs text-blue-800 font-extrabold justify-center items-center">
-              <span>조회 년도:</span>
-              <span className="text-blue-700 bg-white px-2.5 py-0.5 rounded shadow-sm">{currentYear}년도</span>
-            </div>
-            <div className="flex gap-1.5 bg-green-100/50 p-2 rounded-xl text-xs text-green-800 font-extrabold justify-center items-center">
-              <span>현재 구역 필터:</span>
+            <button onClick={() => setIsRankingOpen(true)} className="flex gap-1.5 bg-gradient-to-r from-amber-100 to-yellow-100 border border-yellow-200 p-2 rounded-xl text-xs text-yellow-800 font-extrabold justify-center items-center hover:scale-105 transition-transform shadow-sm">
+              <Trophy className="w-4 h-4 text-yellow-600" />
+              <span>명예의 전당 랭킹</span>
+            </button>
+            <div className="flex gap-1.5 bg-emerald-50 border border-emerald-100 p-2 rounded-xl text-xs text-emerald-800 font-extrabold justify-center items-center">
+              <span>필터:</span>
               <span className="text-emerald-700 bg-white px-2 py-0.5 rounded shadow-sm">{filterPeriod === 'ALL' ? '1년 전체' : filterPeriod}</span>
             </div>
           </div>
         </div>
 
-        <div className="relative w-full h-[65vh] min-h-[480px] bg-gradient-to-b from-sky-100 to-green-100 rounded-3xl shadow-xl overflow-hidden border-4 border-white">
-          <div className="absolute top-8 left-[10%] w-24 h-8 bg-white/50 rounded-full blur-md pointer-events-none"></div>
-          <div className="absolute top-16 right-[15%] w-32 h-10 bg-white/40 rounded-full blur-lg pointer-events-none"></div>
+        <div className="relative w-full h-[65vh] min-h-[480px] bg-gradient-to-b from-sky-50 via-green-50/50 to-emerald-100/30 rounded-[2rem] shadow-2xl overflow-hidden border-8 border-white/80">
+          <div className="absolute top-8 left-[10%] w-32 h-10 bg-white/60 rounded-full blur-xl pointer-events-none"></div>
           
-          <div className="absolute top-4 left-4 bg-slate-900/40 text-white text-[10px] md:text-xs px-3 py-1.5 rounded-xl backdrop-blur-md pointer-events-none space-y-1 z-10">
-            <p>🔄 마우스 드래그 : 360도 정원 회전</p>
-            <p>🔎 마우스 스크롤 : 줌 인/아웃</p>
-            <p>👆 개체 직접 터치 : 예배 기록 카드 오픈</p>
+          <div className="absolute top-4 left-4 bg-white/70 text-emerald-900 text-[10px] md:text-xs font-bold px-3 py-2 rounded-xl backdrop-blur-md pointer-events-none space-y-1 z-10 border border-white/50 shadow-sm">
+            <p>🔄 드래그 : 회전</p>
+            <p>🔎 휠 : 줌 인/아웃</p>
+            <p>👆 클릭 : 상세 보기</p>
           </div>
 
-          <div className="absolute bottom-4 right-4 bg-white/90 border border-green-200 text-green-900 text-[10px] md:text-xs font-bold px-3 py-2 rounded-xl shadow-lg pointer-events-none z-10 space-y-1">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-              <span>가정예배 나무: {filteredTrees.length}그루</span>
+          <div className="absolute bottom-4 right-4 bg-white/80 border border-emerald-100 text-emerald-900 text-[10px] md:text-xs font-bold px-3.5 py-2.5 rounded-2xl shadow-lg pointer-events-none z-10 space-y-1.5 backdrop-blur-md">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm"></span>
+              <span>가정 나무: {filteredTrees.length}그루</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-pink-400"></span>
-              <span>기도의 꽃밭: {filteredFlowers.length}송이</span>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-pink-400 shadow-sm"></span>
+              <span>기도 꽃밭: {filteredFlowers.length}송이</span>
             </div>
           </div>
 
@@ -160,23 +196,23 @@ export default function App() {
 
         <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
           <button
-            onClick={() => setIsFlowerFormOpen(true)}
-            className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-8 py-4 rounded-2xl font-bold text-base md:text-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
+            onClick={() => requireAuth(() => setIsFlowerFormOpen(true))}
+            className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-8 py-4 rounded-2xl font-bold text-base md:text-lg shadow-lg hover:shadow-xl hover:shadow-pink-500/20 transition-all transform hover:-translate-y-1 border border-pink-400/50"
           >
-            <Flower className="w-5 h-5 animate-spin" style={{ animationDuration: '8s' }} />
+            <Flower className="w-5 h-5 animate-spin" style={{ animationDuration: '10s' }} />
             <span>사랑의 꽃 피우기 (기도)</span>
           </button>
           
           <button
-            onClick={() => {
+            onClick={() => requireAuth(() => {
               setTreeFormMode('new');
               setSelectedTreeForForm('');
               setIsTreeFormOpen(true);
-            }}
-            className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white px-8 py-4 rounded-2xl font-bold text-base md:text-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
+            })}
+            className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white px-8 py-4 rounded-2xl font-bold text-base md:text-lg shadow-lg hover:shadow-xl hover:shadow-emerald-500/20 transition-all transform hover:-translate-y-1 border border-emerald-400/50"
           >
             <Sprout className="w-5 h-5" />
-            <span>가정예배 나무 심기 & 가꾸기</span>
+            <span>가정예배 나무 심기</span>
           </button>
         </div>
       </main>
@@ -185,11 +221,16 @@ export default function App() {
         <AdminLoginModal onClose={() => setIsAdminMode(false)} onSuccess={() => setIsAdminAuthenticated(true)} />
       )}
 
+      {isRankingOpen && (
+        <RankingModal onClose={() => setIsRankingOpen(false)} trees={trees} flowers={flowers} />
+      )}
+
       {isFlowerFormOpen && (
         <FlowerFormModal 
           currentYear={currentYear} 
           onClose={() => setIsFlowerFormOpen(false)} 
           onSubmit={addFlower} 
+          userName={user?.displayName || ''}
         />
       )}
 
@@ -217,11 +258,12 @@ export default function App() {
         onLikeTreeLog={handleLikeTreeLog}
         onAddFlowerComment={handleAddFlowerComment}
         onAddTreeLogComment={handleAddTreeLogComment}
-        onOpenTreeForm={(id) => {
+        onOpenTreeForm={(id) => requireAuth(() => {
           setTreeFormMode('existing');
           setSelectedTreeForForm(id);
           setIsTreeFormOpen(true);
-        }}
+        })}
+        userName={user?.displayName || ''}
       />
     </div>
   );

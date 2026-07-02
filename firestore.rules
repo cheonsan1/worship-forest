@@ -1,0 +1,42 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 공통 함수: 로그인 여부 확인
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // settings 컬렉션 (숲 이름 등 설정)
+    match /settings/{document=**} {
+      // 누구나 읽을 수 있음
+      allow read: if true;
+      // 관리자나 로그인한 사람만 수정 가능하도록 제한 가능하나, 
+      // 현재는 로그인한 사용자면 수정 가능하게 열어둡니다.
+      allow write: if isAuthenticated();
+    }
+    
+    // trees 컬렉션 (가정예배 나무 및 일지)
+    match /trees/{document=**} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      // 기존 문서 업데이트(하트 추가, 댓글 추가, 예배 기록 추가)도 로그인 필수
+      allow update: if isAuthenticated();
+      // 삭제는 금지(또는 특정 조건) - 일단 로그인 사용자 허용
+      allow delete: if isAuthenticated();
+    }
+    
+    // flowers 컬렉션 (기도의 꽃)
+    match /flowers/{document=**} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+    
+    // 그 외 모든 문서 차단 (보안 기본값)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
