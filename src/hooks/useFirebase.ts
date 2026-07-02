@@ -6,7 +6,7 @@ import type { Tree, Flower, Settings } from '../types';
 export function useFirebase() {
   const [trees, setTrees] = useState<Tree[]>([]);
   const [flowers, setFlowers] = useState<Flower[]>([]);
-  const [settings, setSettings] = useState<Settings>({ churchName: '우리의' });
+  const [settings, setSettings] = useState<Settings>({ churchName: '동부교회' });
 
   useEffect(() => {
     // Settings listener
@@ -14,7 +14,7 @@ export function useFirebase() {
       if (doc.exists()) {
         setSettings(doc.data() as Settings);
       } else {
-        setDoc(doc.ref, { churchName: '우리의' }); // initialize if not exists
+        setDoc(doc.ref, { churchName: '동부교회' }); // initialize if not exists
       }
     });
 

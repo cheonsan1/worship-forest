@@ -52,7 +52,7 @@ export default function AdminConsole({
           <div className="space-y-1">
             <h2 className="text-lg font-extrabold flex items-center gap-1.5 text-yellow-300">
               <Sliders className="w-5 h-5" />
-              <span>워쉽 숲 관리자 콘솔</span>
+              <span>워십 숲 관리자 콘솔</span>
             </h2>
             <p className="text-xs text-emerald-200">정원의 조회 기간을 설정하고, 메인 명칭을 커스텀 설정하세요.</p>
           </div>
@@ -68,7 +68,7 @@ export default function AdminConsole({
                 onChange={(e) => setLocalChurchName(e.target.value)}
                 onBlur={handleSave}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
-                placeholder="예: 천산중앙"
+                placeholder="예: 동부교회"
                 className="px-2.5 py-1 rounded-lg text-xs text-gray-800 outline-none focus:ring-2 focus:ring-yellow-400 font-bold w-full sm:w-32"
               />
             </div>

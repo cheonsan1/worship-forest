@@ -84,7 +84,7 @@ export default function App() {
           <div className="flex items-center space-x-3">
             <a href="/" className="flex items-center gap-2 text-white hover:text-emerald-100 transition-colors">
               <span className="text-xl md:text-2xl font-extrabold tracking-tight">
-                🌳 워쉽 트리
+                🌳 동부교회 워십 트리
               </span>
             </a>
           </div>
@@ -144,7 +144,7 @@ export default function App() {
       <main className="max-w-6xl mx-auto px-4 py-6 md:py-8">
         {/* Hero Section */}
         <div className="text-center mb-6 md:mb-10">
-          <h2 className="text-2xl md:text-3xl font-bold text-emerald-800 mb-2">우리 교회의 워쉽 숲</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-emerald-800 mb-2">동부교회 워십 숲</h2>
           <p className="text-sm md:text-base text-gray-500">모든 성도님의 예배 나무가 모여 만들어진 숲입니다.</p>
         </div>
 
