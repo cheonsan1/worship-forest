@@ -1,4 +1,3 @@
-import React from 'react';
 import { Sliders, Settings, RefreshCw, Trash2, BarChart2 } from 'lucide-react';
 import { historicalYearsData } from '../utils/helpers';
 

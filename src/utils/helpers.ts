@@ -1,4 +1,4 @@
-import { Tree, Flower } from '../types';
+import type { Tree, Flower } from '../types';
 
 export const getPeriodFromDate = (dateStr: string) => {
   const d = new Date(dateStr);

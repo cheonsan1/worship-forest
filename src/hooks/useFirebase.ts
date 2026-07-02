@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { collection, doc, onSnapshot, setDoc, updateDoc, deleteDoc, addDoc, getDoc } from 'firebase/firestore';
+import { collection, doc, onSnapshot, setDoc, updateDoc, deleteDoc, addDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { Tree, Flower, Settings } from '../types';
+import type { Tree, Flower, Settings } from '../types';
 
 export function useFirebase() {
   const [trees, setTrees] = useState<Tree[]>([]);

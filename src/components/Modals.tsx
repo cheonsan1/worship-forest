@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Flower, Sprout, MessageCircle, Heart, Calendar, ChevronRight, Send, Lock } from 'lucide-react';
-import { Tree, Flower as FlowerType } from '../types';
+import type { Tree, Flower as FlowerType } from '../types';
 import { flowerEmojis } from '../utils/helpers';
 
 // ... (Will define the AdminModal, FlowerFormModal, TreeFormModal, and DetailModal here)

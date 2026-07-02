@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Sprout, Flower, Info, Lock } from 'lucide-react';
 import { useFirebase } from './hooks/useFirebase';
 import ThreeScene from './components/ThreeScene';

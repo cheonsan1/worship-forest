@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Sky, ContactShadows } from '@react-three/drei';
-import { Tree, Flower } from '../../types';
+import { OrbitControls, ContactShadows } from '@react-three/drei';
+import type { Tree, Flower } from '../../types';
 import TreeMesh from './TreeMesh';
 import FlowerMesh from './FlowerMesh';
 

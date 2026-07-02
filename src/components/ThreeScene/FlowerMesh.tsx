@@ -1,5 +1,4 @@
-import React from 'react';
-import { Flower } from '../../types';
+import type { Flower } from '../../types';
 
 interface FlowerMeshProps {
   flower: Flower;
