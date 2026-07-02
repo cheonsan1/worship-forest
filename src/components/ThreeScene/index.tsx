@@ -4,6 +4,7 @@ import { OrbitControls, ContactShadows } from '@react-three/drei';
 import type { Tree, Flower } from '../../types';
 import TreeMesh from './TreeMesh';
 import FlowerMesh from './FlowerMesh';
+import * as THREE from 'three';
 
 interface ThreeSceneProps {
   trees: Tree[];
@@ -16,6 +17,23 @@ export default function ThreeScene({ trees, flowers, onSelect }: ThreeSceneProps
   // 숲 스케일 동적 확장 공식
   const gardenRadius = 10 + Math.min(20, Math.sqrt(totalElements) * 1.5);
   const dynamicCamDist = 20 + gardenRadius * 0.9;
+
+  // 부드러운 숲 바닥(자연스러운 페이드 아웃) 텍스처 생성
+  const groundTexture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const context = canvas.getContext('2d');
+    if (context) {
+      const gradient = context.createRadialGradient(256, 256, 0, 256, 256, 256);
+      gradient.addColorStop(0, 'rgba(110, 231, 183, 0.7)'); // emerald-300
+      gradient.addColorStop(0.5, 'rgba(167, 243, 208, 0.4)'); // emerald-200
+      gradient.addColorStop(1, 'rgba(167, 243, 208, 0)'); // fade out completely
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, 512, 512);
+    }
+    return new THREE.CanvasTexture(canvas);
+  }, []);
 
   // 수학적 자연 알고리즘(Phyllotaxis - 피보나치 나선)을 적용한 좌표 계산
   const { positionedTrees, positionedFlowers } = useMemo(() => {
@@ -88,16 +106,15 @@ export default function ThreeScene({ trees, flowers, onSelect }: ThreeSceneProps
       />
       <hemisphereLight intensity={0.5} groundColor="#8d9b9c" />
 
-      {/* Garden Platform (부드러운 디자인) */}
-      <mesh position={[0, -0.6, 0]} receiveShadow>
-        <cylinderGeometry args={[gardenRadius, gardenRadius * 1.1, 1.2, 64]} />
-        <meshStandardMaterial color="#a7f3d0" roughness={0.9} metalness={0.0} />
-      </mesh>
-      
-      {/* Garden Border */}
-      <mesh position={[0, 0.05, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[gardenRadius, 0.15, 12, 64]} />
-        <meshStandardMaterial color="#34d399" roughness={0.5} />
+      {/* Natural Soft Ground (원형 테두리 제거 후 자연스러운 그라데이션) */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
+        <planeGeometry args={[gardenRadius * 3, gardenRadius * 3]} />
+        <meshStandardMaterial 
+          map={groundTexture} 
+          transparent={true} 
+          depthWrite={false}
+          roughness={1} 
+        />
       </mesh>
 
       {/* Contact Shadows for realism */}
