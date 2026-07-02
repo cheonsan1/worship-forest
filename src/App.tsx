@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sprout, Flower, Info, Lock, LogOut, LogIn, Trophy } from 'lucide-react';
+import { Sprout, Flower, Lock, LogOut, LogIn, Trophy } from 'lucide-react';
 import { useFirebase } from './hooks/useFirebase';
 import { useAuth } from './hooks/useAuth';
 import ThreeScene from './components/ThreeScene';
