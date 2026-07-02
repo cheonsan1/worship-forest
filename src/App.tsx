@@ -139,6 +139,8 @@ export default function App() {
           setCurrentYear={setCurrentYear}
           onReset={resetAllData}
           onSaveChurchName={() => {}} 
+          trees={trees}
+          flowers={flowers}
         />
       )}
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Sliders, Settings, RefreshCw, Trash2, BarChart2 } from 'lucide-react';
-import { historicalYearsData } from '../utils/helpers';
+import { calculateHistoricalData } from '../utils/helpers';
+import type { Tree, Flower } from '../types';
 
 interface AdminConsoleProps {
   churchName: string;
@@ -11,6 +12,8 @@ interface AdminConsoleProps {
   setCurrentYear: (year: number) => void;
   onReset: () => void;
   onSaveChurchName: () => void;
+  trees: Tree[];
+  flowers: Flower[];
 }
 
 export default function AdminConsole({
@@ -21,9 +24,13 @@ export default function AdminConsole({
   currentYear,
   setCurrentYear,
   onReset,
-  onSaveChurchName
+  onSaveChurchName,
+  trees,
+  flowers
 }: AdminConsoleProps) {
   const [localChurchName, setLocalChurchName] = useState(churchName);
+  
+  const historicalYearsData = calculateHistoricalData(trees, flowers);
 
   useEffect(() => {
     setLocalChurchName(churchName);
@@ -124,7 +131,11 @@ export default function AdminConsole({
           </h3>
           
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5">
-            {Object.entries(historicalYearsData).map(([year, info]) => {
+            {Object.keys(historicalYearsData).length === 0 ? (
+              <div className="col-span-full py-8 text-center text-emerald-300/60 text-sm font-bold">
+                아직 누적된 데이터가 없습니다.
+              </div>
+            ) : Object.entries(historicalYearsData).map(([year, info]) => {
               const isCurrent = Number(year) === currentYear;
               return (
                 <button 

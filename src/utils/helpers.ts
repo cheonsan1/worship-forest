@@ -49,17 +49,50 @@ export const filterData = (rawTrees: Tree[], rawFlowers: Flower[], period: strin
   return { filteredTrees, filteredFlowers };
 };
 
-export const historicalYearsData: Record<number, any> = {
-  2017: { treesCount: 2, flowersCount: 5, activeFamilies: 2, score: 15, growthIndex: '🌱 새싹기' },
-  2018: { treesCount: 4, flowersCount: 12, activeFamilies: 4, score: 28, growthIndex: '🌱 새싹기' },
-  2019: { treesCount: 7, flowersCount: 20, activeFamilies: 6, score: 45, growthIndex: '🌿 묘목기' },
-  2020: { treesCount: 12, flowersCount: 35, activeFamilies: 10, score: 70, growthIndex: '🌿 묘목기' },
-  2021: { treesCount: 18, flowersCount: 50, activeFamilies: 14, score: 110, growthIndex: '🌲 성장기' },
-  2022: { treesCount: 25, flowersCount: 72, activeFamilies: 19, score: 160, growthIndex: '🌲 성장기' },
-  2023: { treesCount: 32, flowersCount: 95, activeFamilies: 24, score: 210, growthIndex: '🌳 울창기' },
-  2024: { treesCount: 40, flowersCount: 120, activeFamilies: 30, score: 280, growthIndex: '🌳 울창기' },
-  2025: { treesCount: 52, flowersCount: 165, activeFamilies: 38, score: 390, growthIndex: '🍎 결실기' },
-  2026: { treesCount: 8, flowersCount: 15, activeFamilies: 3, score: 85, growthIndex: '🌲 성장기' }
+export const calculateHistoricalData = (rawTrees: Tree[], rawFlowers: Flower[]) => {
+  const yearsMap: Record<number, { treesCount: number, flowersCount: number, activeFamilies: Set<string>, score: number, growthIndex: string }> = {};
+
+  rawFlowers.forEach(f => {
+    const { year } = getPeriodFromDate(f.date);
+    if (!yearsMap[year]) {
+      yearsMap[year] = { treesCount: 0, flowersCount: 0, activeFamilies: new Set(), score: 0, growthIndex: '' };
+    }
+    yearsMap[year].flowersCount += 1;
+    yearsMap[year].score += 5; // 꽃 하나당 점수
+  });
+
+  rawTrees.forEach(t => {
+    t.logs.forEach(log => {
+      const { year } = getPeriodFromDate(log.date);
+      if (!yearsMap[year]) {
+        yearsMap[year] = { treesCount: 0, flowersCount: 0, activeFamilies: new Set(), score: 0, growthIndex: '' };
+      }
+      yearsMap[year].treesCount += 1;
+      yearsMap[year].activeFamilies.add(t.id);
+      yearsMap[year].score += 15; // 예배 1회당 점수
+    });
+  });
+
+  const result: Record<number, any> = {};
+  Object.keys(yearsMap).forEach(y => {
+    const year = Number(y);
+    const data = yearsMap[year];
+    let growthIndex = '🌱 새싹기';
+    if (data.score > 40) growthIndex = '🌿 묘목기';
+    if (data.score > 100) growthIndex = '🌲 성장기';
+    if (data.score > 200) growthIndex = '🌳 울창기';
+    if (data.score > 350) growthIndex = '🍎 결실기';
+
+    result[year] = {
+      treesCount: data.treesCount,
+      flowersCount: data.flowersCount,
+      activeFamilies: data.activeFamilies.size,
+      score: data.score,
+      growthIndex
+    };
+  });
+
+  return result;
 };
 
 export const flowerEmojis = ['🌸', '🌷', '🌹', '🌻', '🌼', '🌺'];
