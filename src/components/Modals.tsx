@@ -169,11 +169,26 @@ export function TreeFormModal({ onClose, trees, onSubmitNewTree, onSubmitLog, in
       if (!selectedTreeId) return;
       onSubmitLog(selectedTreeId, newLog);
     } else {
-      if (!familyName.trim()) return;
-      onSubmitNewTree({
-        familyName: `${familyName.trim()} 가정`,
-        logs: [newLog]
-      });
+      const rawName = familyName.trim();
+      if (!rawName) return;
+
+      const targetFamilyName = rawName.endsWith('가정') ? rawName : `${rawName} 가정`;
+      const existingTree = trees.find(t => 
+        t.familyName.trim() === targetFamilyName || 
+        t.familyName.trim() === rawName ||
+        t.familyName.trim().replace(/\s*가정$/, '') === rawName.replace(/\s*가정$/, '')
+      );
+
+      if (existingTree) {
+        // 이미 등록된 가정이면 기존 나무에 자동으로 예배 누적
+        onSubmitLog(existingTree.id, newLog);
+        alert(`'${existingTree.familyName}'의 나무에 새로운 가정예배가 성공적으로 추가·누적되었습니다!`);
+      } else {
+        onSubmitNewTree({
+          familyName: targetFamilyName,
+          logs: [newLog]
+        });
+      }
     }
     onClose();
   };

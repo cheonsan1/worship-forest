@@ -27,6 +27,7 @@ export default function App() {
   const [selectedElement, setSelectedElement] = useState<{ type: 'flower' | 'tree', id: string } | null>(null);
 
   const { filteredTrees, filteredFlowers } = filterData(trees, flowers, filterPeriod, currentYear);
+  const totalWorshipCount = filteredTrees.reduce((sum, t) => sum + (t.logs?.length || 0), 0);
 
   useEffect(() => {
     document.title = `${settings.churchName} 워십 트리`;
@@ -180,7 +181,7 @@ export default function App() {
           <div className="absolute bottom-4 right-4 bg-white/90 border border-emerald-100 text-emerald-900 text-[10px] md:text-xs font-bold px-3.5 py-2.5 rounded-2xl shadow-sm pointer-events-none z-10 space-y-1.5 backdrop-blur-md">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm"></span>
-              <span>가정 나무: {filteredTrees.length}그루</span>
+              <span>가정 나무: {filteredTrees.length}가구 ({totalWorshipCount}회 예배)</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-pink-400 shadow-sm"></span>
