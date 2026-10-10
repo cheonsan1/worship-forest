@@ -78,7 +78,7 @@ export function FlowerFormModal({
   onSubmit,
   onUpdateFlower,
   flowers,
-  currentYear,
+  currentYear: _currentYear,
   userName,
   initialFlowerId
 }: FlowerFormModalProps) {
