@@ -69,7 +69,7 @@ export default function AdminConsole({
                 onBlur={handleSave}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
                 placeholder="예: 천산중앙교회"
-                className="px-2.5 py-1 rounded-lg text-xs text-gray-800 outline-none focus:ring-2 focus:ring-yellow-400 font-bold w-full sm:w-32"
+                className="px-3 py-1.5 rounded-lg text-xs bg-white text-gray-900 placeholder-gray-400 border border-gray-200 outline-none focus:ring-2 focus:ring-yellow-400 font-bold w-full sm:w-44 shadow-inner"
               />
             </div>
 

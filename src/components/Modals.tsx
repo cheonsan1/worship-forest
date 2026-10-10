@@ -48,7 +48,7 @@ export function AdminLoginModal({ onClose, onSuccess }: AdminLoginModalProps) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="비밀번호(4자리) 입력"
-              className="w-full text-center tracking-widest text-lg font-extrabold px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+              className="w-full text-center tracking-widest text-lg font-extrabold px-4 py-3 bg-white text-gray-900 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
             />
             {error && <p className="text-xs text-red-500 mt-2 font-bold text-center">⚠️ {error}</p>}
           </div>
