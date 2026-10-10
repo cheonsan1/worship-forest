@@ -68,7 +68,7 @@ export default function AdminConsole({
                 onChange={(e) => setLocalChurchName(e.target.value)}
                 onBlur={handleSave}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
-                placeholder="예: 동부교회"
+                placeholder="예: 천산중앙교회"
                 className="px-2.5 py-1 rounded-lg text-xs text-gray-800 outline-none focus:ring-2 focus:ring-yellow-400 font-bold w-full sm:w-32"
               />
             </div>

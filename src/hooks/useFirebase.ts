@@ -6,15 +6,22 @@ import type { Tree, Flower, Settings } from '../types';
 export function useFirebase() {
   const [trees, setTrees] = useState<Tree[]>([]);
   const [flowers, setFlowers] = useState<Flower[]>([]);
-  const [settings, setSettings] = useState<Settings>({ churchName: '동부교회' });
+  const [settings, setSettings] = useState<Settings>(() => {
+    const cached = typeof window !== 'undefined' ? localStorage.getItem('churchName') : null;
+    return { churchName: cached || '천산중앙교회' };
+  });
 
   useEffect(() => {
     // Settings listener
     const unsubSettings = onSnapshot(doc(db, 'settings', 'global'), (doc) => {
       if (doc.exists()) {
-        setSettings(doc.data() as Settings);
+        const data = doc.data() as Settings;
+        setSettings(data);
+        if (data.churchName) {
+          localStorage.setItem('churchName', data.churchName);
+        }
       } else {
-        setDoc(doc.ref, { churchName: '동부교회' }); // initialize if not exists
+        setDoc(doc.ref, { churchName: '천산중앙교회' }); // initialize if not exists
       }
     });
 
