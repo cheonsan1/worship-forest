@@ -23,11 +23,13 @@ export default function App() {
   const [isRankingOpen, setIsRankingOpen] = useState(false);
   const [treeFormMode, setTreeFormMode] = useState<'new' | 'existing'>('new');
   const [selectedTreeForForm, setSelectedTreeForForm] = useState('');
+  const [selectedFlowerForForm, setSelectedFlowerForForm] = useState('');
 
   const [selectedElement, setSelectedElement] = useState<{ type: 'flower' | 'tree', id: string } | null>(null);
 
   const { filteredTrees, filteredFlowers } = filterData(trees, flowers, filterPeriod, currentYear);
   const totalWorshipCount = filteredTrees.reduce((sum, t) => sum + (t.logs?.length || 0), 0);
+  const totalPrayersCount = filteredFlowers.reduce((sum, f) => sum + (f.prayers?.length || 1), 0);
 
   useEffect(() => {
     document.title = `${settings.churchName} 워십 트리`;
@@ -185,7 +187,7 @@ export default function App() {
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-pink-400 shadow-sm"></span>
-              <span>기도 꽃밭: {filteredFlowers.length}송이</span>
+              <span>기도 꽃밭: {filteredFlowers.length}송이 ({totalPrayersCount}건의 기도)</span>
             </div>
           </div>
 
@@ -241,9 +243,15 @@ export default function App() {
       {isFlowerFormOpen && (
         <FlowerFormModal 
           currentYear={currentYear} 
-          onClose={() => setIsFlowerFormOpen(false)} 
+          flowers={flowers}
+          onClose={() => {
+            setIsFlowerFormOpen(false);
+            setSelectedFlowerForForm('');
+          }} 
           onSubmit={addFlower} 
+          onUpdateFlower={updateFlower}
           userName={user?.displayName || ''}
+          initialFlowerId={selectedFlowerForForm}
         />
       )}
 
@@ -275,6 +283,10 @@ export default function App() {
           setTreeFormMode('existing');
           setSelectedTreeForForm(id);
           setIsTreeFormOpen(true);
+        })}
+        onOpenFlowerForm={(id) => requireAuth(() => {
+          setSelectedFlowerForForm(id);
+          setIsFlowerFormOpen(true);
         })}
         userName={user?.displayName || ''}
       />

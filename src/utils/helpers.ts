@@ -15,19 +15,32 @@ export const getPeriodFromDate = (dateStr: string) => {
 };
 
 export const filterData = (rawTrees: Tree[], rawFlowers: Flower[], period: string, targetYear: number) => {
-  const filteredFlowers = rawFlowers.filter(f => {
-    const info = getPeriodFromDate(f.date);
-    if (info.year !== targetYear) return false;
+  const filteredFlowers = rawFlowers.map(flower => {
+    const prayers = flower.prayers && flower.prayers.length > 0 
+      ? flower.prayers 
+      : [{ id: flower.id, date: flower.date, message: flower.message, likes: flower.likes }];
 
-    if (period === 'ALL') return true;
-    if (period === 'H1') return info.half === 'H1';
-    if (period === 'H2') return info.half === 'H2';
-    if (period === 'Q1') return info.quarter === 'Q1';
-    if (period === 'Q2') return info.quarter === 'Q2';
-    if (period === 'Q3') return info.quarter === 'Q3';
-    if (period === 'Q4') return info.quarter === 'Q4';
-    return true;
-  });
+    const matchedPrayers = prayers.filter(p => {
+      const info = getPeriodFromDate(p.date);
+      if (info.year !== targetYear) return false;
+
+      if (period === 'ALL') return true;
+      if (period === 'H1') return info.half === 'H1';
+      if (period === 'H2') return info.half === 'H2';
+      if (period === 'Q1') return info.quarter === 'Q1';
+      if (period === 'Q2') return info.quarter === 'Q2';
+      if (period === 'Q3') return info.quarter === 'Q3';
+      if (period === 'Q4') return info.quarter === 'Q4';
+      return true;
+    });
+
+    return {
+      ...flower,
+      prayers: matchedPrayers,
+      message: matchedPrayers[0]?.message || flower.message,
+      date: matchedPrayers[0]?.date || flower.date
+    };
+  }).filter(flower => (flower.prayers && flower.prayers.length > 0));
 
   const filteredTrees = rawTrees.map(tree => {
     const filteredLogs = tree.logs.filter(log => {
@@ -53,12 +66,15 @@ export const calculateHistoricalData = (rawTrees: Tree[], rawFlowers: Flower[]) 
   const yearsMap: Record<number, { treesCount: number, flowersCount: number, activeFamilies: Set<string>, score: number, growthIndex: string }> = {};
 
   rawFlowers.forEach(f => {
-    const { year } = getPeriodFromDate(f.date);
-    if (!yearsMap[year]) {
-      yearsMap[year] = { treesCount: 0, flowersCount: 0, activeFamilies: new Set(), score: 0, growthIndex: '' };
-    }
-    yearsMap[year].flowersCount += 1;
-    yearsMap[year].score += 5; // 꽃 하나당 점수
+    const prayers = f.prayers && f.prayers.length > 0 ? f.prayers : [{ date: f.date }];
+    prayers.forEach(p => {
+      const { year } = getPeriodFromDate(p.date);
+      if (!yearsMap[year]) {
+        yearsMap[year] = { treesCount: 0, flowersCount: 0, activeFamilies: new Set(), score: 0, growthIndex: '' };
+      }
+      yearsMap[year].flowersCount += 1;
+      yearsMap[year].score += 5; // 기도 하나당 점수
+    });
   });
 
   rawTrees.forEach(t => {

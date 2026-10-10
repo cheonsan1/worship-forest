@@ -66,26 +66,63 @@ export function AdminLoginModal({ onClose, onSuccess }: AdminLoginModalProps) {
 interface FlowerFormModalProps {
   onClose: () => void;
   onSubmit: (flower: Omit<FlowerType, 'id'>) => void;
+  onUpdateFlower?: (id: string, data: Partial<FlowerType>) => void;
+  flowers: FlowerType[];
   currentYear: number;
   userName?: string;
+  initialFlowerId?: string;
 }
 
-export function FlowerFormModal({ onClose, onSubmit, currentYear, userName }: FlowerFormModalProps) {
+export function FlowerFormModal({
+  onClose,
+  onSubmit,
+  onUpdateFlower,
+  flowers,
+  currentYear,
+  userName,
+  initialFlowerId
+}: FlowerFormModalProps) {
   const [name, setName] = useState(userName || '');
   const [message, setMessage] = useState('');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !message.trim()) return;
+    const trimmedName = name.trim();
+    const trimmedMessage = message.trim();
+    if (!trimmedName || !trimmedMessage) return;
 
-    onSubmit({
-      name,
-      message,
-      emoji: flowerEmojis[Math.floor(Math.random() * flowerEmojis.length)],
-      date: `${currentYear}-07-02`, // 실시간에 맞게 임의 날짜
-      likes: 0,
-      comments: []
-    });
+    const newPrayer = {
+      id: Date.now().toString(),
+      date,
+      message: trimmedMessage,
+      likes: 0
+    };
+
+    // 이미 같은 이름의 성도 꽃이 피어있는지 검사 (또는 initialFlowerId가 있는 경우)
+    const existingFlower = initialFlowerId 
+      ? flowers.find(f => f.id === initialFlowerId)
+      : flowers.find(f => f.name.trim() === trimmedName);
+
+    if (existingFlower && onUpdateFlower) {
+      const updatedPrayers = [newPrayer, ...(existingFlower.prayers || [])];
+      onUpdateFlower(existingFlower.id, {
+        prayers: updatedPrayers,
+        message: trimmedMessage,
+        date
+      });
+      alert(`'${existingFlower.name}' 성도님의 기도 꽃에 새로운 기도가 성공적으로 누적되었습니다!`);
+    } else {
+      onSubmit({
+        name: trimmedName,
+        message: trimmedMessage,
+        emoji: flowerEmojis[Math.floor(Math.random() * flowerEmojis.length)],
+        date,
+        likes: 0,
+        comments: [],
+        prayers: [newPrayer]
+      });
+    }
     onClose();
   };
 
@@ -96,7 +133,7 @@ export function FlowerFormModal({ onClose, onSubmit, currentYear, userName }: Fl
           <X className="w-6 h-6" />
         </button>
         <h2 className="text-xl md:text-2xl font-bold text-pink-700 mb-6 flex items-center gap-2">
-          <Flower className="text-pink-500 animate-pulse" /> 꽃밭에 새 꽃 피우기
+          <Flower className="text-pink-500 animate-pulse" /> 꽃밭에 새 꽃 피우기 (기도)
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -109,6 +146,16 @@ export function FlowerFormModal({ onClose, onSubmit, currentYear, userName }: Fl
               onChange={(e) => setName(e.target.value)}
               className={`w-full px-4 py-2.5 border rounded-xl outline-none transition ${userName ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white/50 border-gray-200 focus:ring-2 focus:ring-pink-400'}`}
               placeholder="예: 홍길동 집사"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">기도 날짜</label>
+            <input
+              type="date"
+              required
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-pink-400 outline-none text-xs"
             />
           </div>
           <div>
@@ -328,12 +375,13 @@ interface DetailModalProps {
   onAddFlowerComment: (flowerId: string, name: string, text: string) => void;
   onAddTreeLogComment: (treeId: string, logId: string, name: string, text: string) => void;
   onOpenTreeForm: (treeId: string) => void;
+  onOpenFlowerForm?: (flowerId: string) => void;
   userName?: string;
 }
 
 export function DetailModal({
   element, onClose, activeFlower, activeTree, currentYear,
-  onLikeFlower, onLikeTreeLog, onAddFlowerComment, onAddTreeLogComment, onOpenTreeForm, userName
+  onLikeFlower, onLikeTreeLog, onAddFlowerComment, onAddTreeLogComment, onOpenTreeForm, onOpenFlowerForm, userName
 }: DetailModalProps) {
   const [flowerCommenter, setFlowerCommenter] = useState(userName || '');
   const [flowerCommentText, setFlowerCommentText] = useState('');
@@ -351,17 +399,38 @@ export function DetailModal({
         </button>
 
         {element.type === 'flower' && activeFlower && (
-          <div className="space-y-6 text-center">
-            <div>
-              <div className="text-6xl mb-4 animate-bounce">{activeFlower.emoji}</div>
+          <div className="space-y-6">
+            <div className="text-center border-b border-gray-100 pb-4">
+              <div className="text-6xl mb-2 animate-bounce">{activeFlower.emoji}</div>
               <h3 className="text-xl font-bold text-gray-800 mb-1">{activeFlower.name}님의 향기꽃</h3>
               <p className="text-[11px] text-pink-500 font-semibold mb-2 bg-pink-50 w-fit mx-auto px-2.5 py-0.5 rounded-full">사랑과 기도의 꽃밭</p>
-              <p className="text-[10px] text-gray-400">피어난 날: {activeFlower.date}</p>
+              <div className="flex justify-center items-center gap-2 mt-1">
+                <span className="text-[10px] bg-pink-100 text-pink-800 font-bold px-2.5 py-0.5 rounded-full">
+                  누적 {(activeFlower.prayers && activeFlower.prayers.length > 0) ? activeFlower.prayers.length : 1}건의 기도
+                </span>
+              </div>
             </div>
-            
-            <div className="bg-pink-50/50 border border-pink-100 p-5 rounded-2xl text-pink-950 text-left relative shadow-sm">
-              <MessageCircle className="absolute -top-3 left-4 text-pink-200 w-8 h-8 fill-current" />
-              <p className="relative z-10 whitespace-pre-wrap text-sm leading-relaxed">{activeFlower.message}</p>
+
+            {/* 기도 목록 리스트 (누적 기도들) */}
+            <div className="space-y-4 max-h-[40vh] overflow-y-auto pr-1">
+              {((activeFlower.prayers && activeFlower.prayers.length > 0) ? activeFlower.prayers : [{
+                id: activeFlower.id,
+                date: activeFlower.date,
+                message: activeFlower.message,
+                likes: activeFlower.likes
+              }]).map((prayer, index, arr) => (
+                <div key={prayer.id || index} className="bg-pink-50/60 border border-pink-100/70 p-4 rounded-2xl space-y-2 text-left relative shadow-sm">
+                  <div className="flex items-center justify-between text-xs font-bold border-b border-pink-100/50 pb-2">
+                    <span className="flex items-center gap-1 text-xs text-pink-800">
+                      <Calendar className="w-3.5 h-3.5" />{prayer.date}
+                    </span>
+                    <span className="bg-pink-200/60 text-pink-900 px-2 py-0.5 rounded text-[10px]">
+                      {arr.length - index}회차 기도
+                    </span>
+                  </div>
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">{prayer.message}</p>
+                </div>
+              ))}
             </div>
 
             <div className="flex items-center justify-between border-t border-b border-gray-100 py-3">
@@ -402,6 +471,15 @@ export function DetailModal({
                 <input type="text" required value={flowerCommentText} onChange={e => setFlowerCommentText(e.target.value)} placeholder="격려 한마디" className="flex-1 bg-white/50 px-3 py-1.5 border border-gray-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-pink-400" />
                 <button type="submit" className="bg-pink-500 text-white p-2 rounded-lg shadow-sm"><Send className="w-3.5 h-3.5" /></button>
               </form>
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-gray-100 flex justify-end">
+              <button 
+                onClick={() => { onClose(); onOpenFlowerForm?.(activeFlower.id); }}
+                className="flex items-center gap-1 text-xs text-pink-700 font-bold hover:text-pink-800 bg-pink-50 hover:bg-pink-100 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                기도 누적하여 쓰기 <ChevronRight className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
         )}

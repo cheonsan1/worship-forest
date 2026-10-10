@@ -24,6 +24,13 @@ export interface Tree {
   logs: TreeLog[];
 }
 
+export interface FlowerPrayer {
+  id: string;
+  message: string;
+  date: string;
+  likes?: number;
+}
+
 export interface Flower {
   id: string;
   name: string;
@@ -34,6 +41,7 @@ export interface Flower {
   comments: Comment[];
   x?: number;
   z?: number;
+  prayers?: FlowerPrayer[];
 }
 
 export interface Settings {

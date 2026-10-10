@@ -54,6 +54,7 @@ export function RankingModal({ onClose, trees, flowers }: RankingModalProps) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-gray-800 truncate">{flower.name}</p>
+                    <p className="text-[10px] text-pink-600 font-bold bg-pink-50 w-fit px-1.5 py-0.5 rounded mb-0.5">누적 {flower.prayers?.length || 1}건 기도</p>
                     <p className="text-xs text-gray-500 truncate">{flower.message}</p>
                   </div>
                   <div className="flex items-center gap-1 text-pink-500 bg-pink-50 px-2 py-1 rounded-lg">
